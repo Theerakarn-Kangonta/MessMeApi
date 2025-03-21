@@ -1,0 +1,6 @@
+@MessMeApi_HostAddress = http://localhost:5149
+
+GET {{MessMeApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
