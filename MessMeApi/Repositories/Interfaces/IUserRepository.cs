@@ -12,7 +12,5 @@ namespace MessMeApi.Repositories.Interfaces
         Task<User> GetUserByUsernameAsync(string username);
         Task<bool> RegisterUser(User user);
         Task<bool> EmailExists(string email);
-
-
     }
 }

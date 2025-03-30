@@ -24,7 +24,7 @@ namespace MessMeApi.Controllers
         public IActionResult Login([FromBody] LoginRequest request)
         {
             var token = _authService.Authenticate(request.Username, request.Password);
-            if (token == null)
+            if (token.Result == null)
                 return Unauthorized(new { message = "Invalid username or password" });
 
             return Ok(new { token });

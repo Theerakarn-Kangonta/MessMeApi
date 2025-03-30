@@ -8,6 +8,7 @@ using MessMeApi.Mappers;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +37,23 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
+
+// ✅ Add Authentication with Cookies
+//builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+//    .AddCookie(options =>
+//    {
+//        options.Cookie.HttpOnly = true;
+//        options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // HTTPS only
+//        options.Cookie.SameSite = SameSiteMode.Strict;
+//        options.Cookie.Name = "AuthCookie"; // Cookie name
+//        options.LoginPath = "/api/auth/login";
+//        options.AccessDeniedPath = "/api/auth/denied";
+//        options.ExpireTimeSpan = TimeSpan.FromDays(7); // Cookie expiry
+//    });
+
+//builder.Services.AddAuthorization();
+
+
 // ✅ Dependency Injection
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<UserService>();
@@ -45,21 +63,24 @@ builder.Services.AddControllers();
 builder.Services.AddAuthorization();
 
 // ✅ CORS Configuration (Fixing AllowedOrigins)
-var allowedOrigins = builder.Configuration["AllowedOrigins"]?.Split(",") ?? Array.Empty<string>();
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>();
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend",
-        policy => policy.WithOrigins(allowedOrigins)
-                        .AllowAnyHeader()
-                        .AllowAnyMethod()
-                        .AllowCredentials()
-    );
+    options.AddPolicy("CorsPolicy", policy =>
+    {
+        policy.WithOrigins(allowedOrigins)
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
 });
+
 
 var app = builder.Build();
 
 // ✅ Enable CORS
-app.UseCors("AllowFrontend");
+app.UseCors("CorsPolicy");
 
 // ✅ Configure Middleware
 app.UseHttpsRedirection();
